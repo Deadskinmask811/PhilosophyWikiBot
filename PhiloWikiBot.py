@@ -6,6 +6,10 @@ from bs4 import BeautifulSoup
 
 
 #TODO FIX TAB SPACING IN VIM YOU FUCK
+#TODO FIX VIMRC TO INCLUDE SYNTAX ON
+
+#TODO find a way to exclude the link loops and no links articles to not skew data.
+
 
 def find_first_link(url):
     # takes a string for a wikipedia url and returns the first link in the body of the article.
@@ -137,7 +141,7 @@ def calculate_step_median(article_dict):
         return (steps_list[middle] + steps_list[middle - 1]) / 2
 
 def main():
-    article_chain = crawler(20)
+    article_chain = crawler(50)
     article_dict = count_article_steps(article_chain)
 
     print("****RESULTS****")
