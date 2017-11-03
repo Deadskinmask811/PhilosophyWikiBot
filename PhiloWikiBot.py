@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 
 #TODO find a way to exclude the link loops and no links articles to not skew data.
 
-
+#TODO DID MY PUSH WORK?
 def find_first_link(url):
     # takes a string for a wikipedia url and returns the first link in the body of the article.
     response = requests.get(url)
