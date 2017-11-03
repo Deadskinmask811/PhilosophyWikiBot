@@ -8,9 +8,7 @@ from bs4 import BeautifulSoup
 #TODO FIX TAB SPACING IN VIM YOU FUCK
 #TODO FIX VIMRC TO INCLUDE SYNTAX ON
 
-#TODO find a way to exclude the link loops and no links articles to not skew data.
 
-#TODO DID MY PUSH WORK?
 def find_first_link(url):
     # takes a string for a wikipedia url and returns the first link in the body of the article.
     response = requests.get(url)
@@ -52,7 +50,8 @@ def continue_crawl(search_history, target_url, max_steps=99999999999999999999):
         print("We've arrived at an article we've already seen, aborting search!")
         # this keeps track of articles with no links, put in index 1 because index 0 is the RANDOM link
         # and will be removed in the loop, use LINK_LOOP to parse out this data later to prevent outliers.
-        search_history[1] = "LINK_LOOP"
+        #search_history[2] = "LINK_LOOP"
+        search_history.append("LINK_LOOP")
         return False
     else:
         return True
@@ -73,11 +72,10 @@ def get_article_chain():
         first_link = find_first_link(article_chain[-1])
         if not first_link:
             print("We've arrived at an article with no links, aborting search!")
-            # if article has no links, replace index 1 with tag so we can parse out later on.
-            article_chain[1] = "NO_LINK"
+            # if article has no links, replace index -1 with tag so we can parse out later on.
+            article_chain.append("NO_LINK")
             break
         else:
-            #TODO make sure this makes the articles that do not have links are not recorded in the article chain
             article_chain.append(first_link)
     
     # removes the 'RANDOM' url from the start of the crawler.
@@ -96,7 +94,6 @@ def crawler(num_of_searches): # executes the get_article_chain function, x numbe
     return chains
 
 def print_article_chain(article_chain): # prints articles in an easily readable format
-    
     for article in article_chain:
         for link in article:
             print(link)
@@ -108,11 +105,22 @@ def print_article_dict(article_dict): # prints the article_dict in an easily rea
 
 def count_article_steps(article_chain): # count each article chain and assign it to a dictionary
     article_dict = {}
-    for article in article_chain:
-        print("Debug: getting length of {}...".format(article))
-        article_dict[article[0]] = len(article) 
+    link_loop_dict = {}
+    no_link_dict = {}
 
-    return article_dict
+    for article in article_chain:
+        # These cases with no links or link loops are tagged in the index of [1] in the list, use this to
+        # put into the appropriate dictionaries while keeping track of the originating link that gave
+        # the error. Possibly retain the entire link chain down the road?
+        if article[-1] == "LINK_LOOP":
+            # DO I delete the added append tag to get proper length? Or just subtract 1 from the length to compensate?
+            link_loop_dict[article[0]] = len(article)
+        elif article[-1] == "NO_LINK":
+            no_link_dict[article[0]] = len(article)
+        else:
+            article_dict[article[0]] = len(article) 
+    # returns a tuple of dicts
+    return (article_dict, no_link_dict, link_loop_dict)
 
 def calculate_step_mean(article_dict): # takes a dictionary of articles and calculates the mean of the values
 				       # (steps taken from start to finish
@@ -141,11 +149,17 @@ def calculate_step_median(article_dict):
         return (steps_list[middle] + steps_list[middle - 1]) / 2
 
 def main():
-    article_chain = crawler(50)
-    article_dict = count_article_steps(article_chain)
+    article_chain = crawler(15)
+    #article_dict = count_article_steps(article_chain)
+    article_dict, no_links_dict, link_loop_dict = (count_article_steps(article_chain))
 
     print("****RESULTS****")
+    print("Successful Link Chains:\n")
     print_article_dict(article_dict)
+    print("No Links Chains:\n")
+    print_article_dict(no_links_dict)
+    print("Link Loop Chains:\n")
+    print_article_dict(link_loop_dict)
     print("MEAN: {}".format(calculate_step_mean(article_dict)))
     print("MEDIAN: {}".format(calculate_step_median(article_dict)))
     print("****END RESULTS****")
