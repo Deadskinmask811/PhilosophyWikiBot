@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 
 #TODO FIX TAB SPACING IN VIM YOU FUCK
 #TODO FIX VIMRC TO INCLUDE SYNTAX ON
-
+#TODO TEST
 
 def find_first_link(url):
     # takes a string for a wikipedia url and returns the first link in the body of the article.
