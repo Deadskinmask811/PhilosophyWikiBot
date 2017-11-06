@@ -4,11 +4,6 @@ import urllib
 import requests
 from bs4 import BeautifulSoup
 
-
-#TODO FIX TAB SPACING IN VIM YOU FUCK
-#TODO FIX VIMRC TO INCLUDE SYNTAX ON
-#TODO TEST
-
 def find_first_link(url):
     # takes a string for a wikipedia url and returns the first link in the body of the article.
     response = requests.get(url)
@@ -35,6 +30,7 @@ def find_first_link(url):
 
     return first_link
 
+#TODO Make the max_steps a little more proper, set it to a boolean value, if true it takes an int.
 def continue_crawl(search_history, target_url, max_steps=99999999999999999999):
     # conditionals controlling the crawling behavior
     if search_history[-1] == target_url:
@@ -59,7 +55,6 @@ def continue_crawl(search_history, target_url, max_steps=99999999999999999999):
 def get_article_chain():
     # function returns the completed chain of URLs, from first page to target inside of a list.
     start_url = "https://en.wikipedia.org/wiki/Special:Random"
-    #start_url = "https://en.wikipedia.org/wiki/Classroom"
     target_url = "https://en.wikipedia.org/wiki/Philosophy"
     article_chain = [start_url]
 
@@ -140,16 +135,16 @@ def calculate_step_median(article_dict):
         steps_list.append(value)
 
     steps_list.sort()
-    print("Sorted list of steps\n{}\n".format(steps_list))
+    #print("DEBUG: Sorted list of steps\n{}\n".format(steps_list))
     middle = len(steps_list) // 2
-    print("MIDDLE OF LIST =  {}".format(middle))
+    #print("DEBUG: MIDDLE OF LIST =  {}".format(middle))
     if len(steps_list) % 2 != 0:
         return steps_list[middle] 
     else:
         return (steps_list[middle] + steps_list[middle - 1]) / 2
 
 def main():
-    article_chain = crawler(15)
+    article_chain = crawler(10)
     #article_dict = count_article_steps(article_chain)
     article_dict, no_links_dict, link_loop_dict = (count_article_steps(article_chain))
 
@@ -163,6 +158,13 @@ def main():
     print("MEAN: {}".format(calculate_step_mean(article_dict)))
     print("MEDIAN: {}".format(calculate_step_median(article_dict)))
     print("****END RESULTS****")
+
+    print("DEBUG: writing to file...")
+    with open('results.txt', 'w') as f:
+        for k,v in article_dict.items():
+            f.write(k + ":" + str(v) + "\n")
+
+    print("DEBUG: DONE...") 
 
 if __name__ == "__main__":
     main()
